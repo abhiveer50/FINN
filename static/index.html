@@ -1,0 +1,153 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FINN</title>
+<style>
+:root{--bg:#0b0d10;--card:#14181d;--line:#232a32;--tx:#e8ecf1;--mut:#8a95a3;--up:#22c58b;--dn:#ef5b5b;--ac:#7aa2ff;--am:#f2b84b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,Inter,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.wrap{max-width:520px;margin:0 auto;padding:16px}
+h1{font-size:13px;letter-spacing:.14em;color:var(--mut);margin:4px 0 14px;display:flex;justify-content:space-between}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.pills{display:flex;gap:6px}.pill{border:1px solid var(--line);background:none;color:var(--mut);padding:5px 12px;border-radius:99px;font-size:13px}
+.pill.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.big{font-size:40px;font-weight:650;letter-spacing:-.02em}.up{color:var(--up)}.dn{color:var(--dn)}
+.mut{color:var(--mut);font-size:12px}.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
+.sec{font-size:12px;color:var(--mut);letter-spacing:.08em;margin:0 0 8px}
+.ann{padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}.ann:last-child{border:0}
+.ah{display:flex;align-items:center;gap:8px}.ah .r{margin-left:auto}
+.ann p{margin:5px 0 0 16px;font-size:14px}
+.dot{flex:none;width:8px;height:8px;border-radius:50%}
+.p1{background:var(--dn)}.p2{background:var(--am)}.p3{background:var(--ac)}.p4{background:#4b5563}
+.tag{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--mut);white-space:nowrap}
+.btn{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--tx);font-size:14px;display:block;text-align:center;text-decoration:none}
+.btn.pri{background:var(--ac);color:#0b0d10;border-color:var(--ac);font-weight:600}
+.sheet{position:fixed;inset:0;background:var(--bg);overflow:auto;z-index:5;transform:translateY(100%);transition:.25s;visibility:hidden}
+.sheet.open{transform:none;visibility:visible}.z2{z-index:6}
+.top{position:sticky;top:0;background:var(--bg);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);z-index:3}
+.top button{background:none;border:0;color:var(--ac);font-size:15px;padding:0}
+.filters{position:sticky;top:49px;background:var(--bg);padding:10px 16px;border-bottom:1px solid var(--line);z-index:2}
+.search{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--tx);font-size:15px;outline:none}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-top:10px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:none;color:var(--mut);padding:5px 11px;border-radius:99px;font-size:12px;white-space:nowrap}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#0b0d10}.chip:disabled{opacity:.35}
+table{width:100%;border-collapse:collapse}td,th{padding:8px 0;text-align:right;font-size:14px}th{color:var(--mut);font-weight:500;font-size:12px}
+td:first-child,th:first-child{text-align:left}tr+tr td{border-top:1px solid var(--line)}
+.hl{font-size:20px;font-weight:620;line-height:1.3;margin:10px 0 6px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.tile{background:var(--bg);border-radius:12px;padding:10px}
+.tile b{display:block;font-size:17px}.tile span{font-size:11px;color:var(--mut)}
+a{color:var(--ac)}p.s{margin:0;font-size:14.5px;line-height:1.55}
+details summary{color:var(--mut);font-size:12px;cursor:pointer;margin-top:10px}
+</style></head><body>
+<div class="wrap">
+ <h1><span>FINN</span><span id="src" class="mut"></span></h1>
+ <div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center"><span class="mut">Equal-weight portfolio</span><div class="pills" id="pills"></div></div>
+  <div class="big" id="perf">–</div>
+  <svg id="spark" viewBox="0 0 300 60" width="100%" height="60" preserveAspectRatio="none"></svg>
+  <div class="mut" id="newl"></div>
+ </div>
+ <div class="cols">
+  <div class="card"><div class="sec">TOP GAINERS</div><div id="gain"></div></div>
+  <div class="card"><div class="sec">TOP LOSERS</div><div id="lose"></div></div>
+ </div>
+ <div class="card"><div class="sec">ANNOUNCEMENTS · BY PRIORITY</div>
+  <input class="search" id="hsearch" placeholder="Search announcements…" style="margin-bottom:6px">
+  <div id="anns"></div><button class="btn" id="more">View more</button></div>
+</div>
+
+<div class="sheet" id="list"><div class="top"><button onclick="history.back()">‹ Back</button><b>Announcements · last 7 days</b></div>
+ <div class="filters"><input class="search" id="q" type="search" placeholder="Search company, type or keyword"><div class="chips" id="chips"></div></div>
+ <div class="wrap"><div class="card" id="allanns"></div><button class="btn" id="load">Load more</button></div></div>
+
+<div class="sheet z2" id="det"><div class="top"><button onclick="history.back()">‹ Back</button><b id="dtitle"></b></div>
+ <div class="wrap" id="dbody"></div></div>
+
+<script>
+const $=s=>document.querySelector(s),f=u=>fetch(u).then(r=>{if(!r.ok)throw r.status;return r.json()});
+let win="1D",next=null,sel=new Set(),qv="",tm;
+const cls=v=>v>=0?"up":"dn",fmt=v=>v==null?"–":(v>0?"+":"")+v.toFixed(1)+"%";
+const num=v=>v==null?"–":Number(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+const bps=v=>v==null?"–":`<span class="${cls(v)}">${v>0?"+":""}${v} bps</span>`;
+const chip=v=>v==null?"–":`<span class="${cls(v)}">${fmt(v)}</span>`;
+function rel(ts){const h=(Date.now()-new Date(ts))/36e5;return h<1?"just now":h<24?Math.round(h)+"h ago":Math.round(h/24)+"d ago"}
+function spark(c,col,h=60){if(!c||c.length<2)return"";const mn=Math.min(...c),mx=Math.max(...c);
+ return`<svg viewBox="0 0 300 ${h}" width="100%" height="${h}" preserveAspectRatio="none"><polyline fill="none" stroke="${col}" stroke-width="2" points="${c.map((v,i)=>`${i/(c.length-1)*300},${h-4-(v-mn)/(mx-mn||1)*(h-8)}`).join(" ")}"/></svg>`}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const go=h=>{location.hash=h};
+function openS(id){$("#"+id).classList.add("open")}function closeS(id){$("#"+id).classList.remove("open")}
+
+/* ---------- home ---------- */
+$("#pills").innerHTML=["1D","1W","1M"].map(w=>`<button class="pill" data-w="${w}">${w}</button>`).join("");
+$("#pills").onclick=e=>{if(e.target.dataset.w){win=e.target.dataset.w;loadSummary()}};
+async function loadSummary(){
+ const d=await f("/api/summary?window="+win);
+ document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("on",p.dataset.w===win));
+ $("#src").textContent=d.source==="sample"?"SAMPLE DATA":"LIVE · EOD";
+ $("#perf").innerHTML=`<span class="${cls(d.ew_return)}">${(d.ew_return>0?"+":"")+d.ew_return.toFixed(2)}%</span>`;
+ $("#spark").innerHTML=spark(d.curve,d.ew_return>=0?"#22c58b":"#ef5b5b").replace(/<\/?svg[^>]*>/g,"");
+ const rows=a=>a.map(x=>`<div class="row"><span>${x.symbol}</span><span class="${cls(x.pct)}">${fmt(x.pct)}</span></div>`).join("");
+ $("#gain").innerHTML=rows(d.gainers);$("#lose").innerHTML=rows(d.losers);
+ $("#newl").textContent=d.new_listings.length?`${d.new_listings.join(", ")}: new listing, excluded from ${win} movers`:"";
+}
+const annHtml=a=>`<div class="ann" onclick="go('a/${a.id}')"><div class="ah"><span class="dot p${a.prio}"></span><b>${a.symbol}</b>
+ <span class="tag">${esc(a.label)}${a.period?" · "+a.period:""}</span><span class="mut r">${rel(a.ts)}</span></div><p>${esc(a.headline)}</p></div>`;
+async function loadHome(){
+ const d=await f("/api/announcements?limit=7");
+ $("#anns").innerHTML=d.items.map(annHtml).join("");$("#more").style.display=d.total>7?"":"none";
+}
+
+/* ---------- announcements window ---------- */
+async function loadMore(reset){
+ if(reset){next=0;$("#allanns").innerHTML=""}
+ if(next==null)return;
+ const d=await f(`/api/announcements?days=7&offset=${next}&limit=10&q=${encodeURIComponent(qv)}&cat=${encodeURIComponent([...sel].join(","))}`);
+ if(reset)$("#chips").innerHTML=d.categories.map(c=>`<button class="chip${sel.has(c.name)?" on":""}" data-c="${c.name}"${c.count||sel.has(c.name)?"":" disabled"}>${c.name} ${c.count}</button>`).join("");
+ $("#allanns").insertAdjacentHTML("beforeend",d.items.length?d.items.map(annHtml).join(""):'<p class="mut">No announcements match.</p>');
+ next=d.next;$("#load").style.display=next==null?"none":"";
+}
+$("#more").onclick=()=>go("all");
+$("#load").onclick=()=>loadMore(false);
+$("#chips").onclick=e=>{const c=e.target.dataset.c;if(!c)return;sel.has(c)?sel.delete(c):sel.add(c);loadMore(true)};
+$("#q").oninput=e=>{qv=e.target.value;clearTimeout(tm);tm=setTimeout(()=>loadMore(true),250)};
+$("#hsearch").onfocus=e=>{e.target.blur();go("all");setTimeout(()=>$("#q").focus(),350)};
+
+/* ---------- detail page ---------- */
+const sec=(t,b)=>`<div class="card"><div class="sec">${t}</div>${b}</div>`;
+async function openDet(id){
+ let a;try{a=await f("/api/announcements/"+id)}catch(e){go("");return}
+ $("#dtitle").textContent=a.symbol+(a.sector?" · "+a.sector:"");
+ let h=`<div class="card"><div class="ah"><span class="dot p${a.prio}"></span><span class="tag">${esc(a.label)}${a.period?" · "+a.period:""}</span><span class="mut r">${new Date(a.ts).toLocaleString([], {dateStyle:"medium",timeStyle:"short"})}</span></div>
+  <div class="hl">${esc(a.headline)}</div>${a.pdf?`<a href="${esc(a.pdf)}" target="_blank" rel="noopener">Open original filing ↗</a>`:""}</div>`;
+ if(a.is_results){
+  if(a.results){const r=a.results,mt=r.meta||{},N={revenue:"Revenue",ebitda:mt.ebitda_label||"EBITDA",pbt:"PBT",pat:"PAT (earnings)",eps:"EPS (₹)"},m=r.margins||{};
+   h+=sec("RESULTS · ₹ CRORE"+(mt.source?` · via ${mt.source}${mt.as_of?" ("+mt.as_of+")":""}`:""),`<table><tr><th></th><th>Value</th><th>QoQ</th><th>YoY</th></tr>`+
+    Object.keys(N).map(k=>`<tr><td>${N[k]}</td><td>${num(r[k].val)}</td><td>${chip(r[k].qoq)}</td><td>${chip(r[k].yoy)}</td></tr>`).join("")+`</table>`+
+    `<table style="margin-top:10px"><tr><th>Margins</th><th>Now</th><th>QoQ</th><th>YoY</th></tr>
+     <tr><td>${mt.margin_label||"EBITDA margin"}</td><td>${m.ebitda??"–"}%</td><td>${bps(m.ebitda_qoq_bps)}</td><td>${bps(m.ebitda_yoy_bps)}</td></tr>
+     <tr><td>PAT margin</td><td>${m.pat??"–"}%</td><td>${bps(m.pat_qoq_bps)}</td><td>${bps(m.pat_yoy_bps)}</td></tr></table>`);
+   if(a.narrative)h+=sec("IN SHORT",`<p class="s">${esc(a.narrative)}</p>`);
+  }else h+=sec("RESULTS",`<p class="s mut">Couldn't get the numbers for this filing.${a.results_note?`<br><br>Why: ${esc(a.results_note)}`:""}<br><br>Use the screener.in link below.</p>`);
+  h+=`<a class="btn pri" href="${a.screener}" target="_blank" rel="noopener">Full ${a.label==="Annual Results"?"annual":"quarterly"} results on screener.in ↗</a><div style="height:14px"></div>`;
+  const rt=a.ratios||{},T=(l,v)=>`<div class="tile"><b>${v}</b><span>${l}</span></div>`;
+  if(Object.values(rt).some(v=>v!=null))h+=sec("KEY RATIOS",`<div class="grid">${T("P/E",rt.pe?num(rt.pe)+"x":"–")}${T("P/B",rt.pb?num(rt.pb)+"x":"–")}${T("ROE",rt.roe!=null?rt.roe+"%":"–")}${T("Debt / equity",rt.de!=null?rt.de:"–")}${T("Market cap",rt.mcap?"₹"+num(rt.mcap)+" cr":"–")}${a.results?T("EPS",num(a.results.eps.val)):""}</div>`);
+  if(a.analyst){const an=a.analyst;h+=sec("ANALYST VIEW",`<div class="grid">${T("Consensus",(an.rating||"–").replace("_"," ").toUpperCase())}${T("Mean target",an.target?"₹"+num(an.target):"–")}${T("Upside",an.upside!=null?fmt(an.upside):"–")}</div>${an.n?`<p class="mut" style="margin:8px 0 0">${an.n} analysts · via Yahoo Finance</p>`:""}`)}
+ }else{
+  h+=sec("FILING TEXT",`<p class="s">${esc(a.text)}</p>`);
+ }
+ if(a.price)h+=sec("PRICE REACTION",`<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:22px">₹${num(a.price.last)}</b><span>${chip(a.price.d1)} 1D · ${chip(a.price.w1)} 1W</span></div>${spark(a.price.curve,(a.price.w1||0)>=0?"#22c58b":"#ef5b5b",50)}<div class="mut">Last 30 sessions, end-of-day</div>`);
+ if(a.related&&a.related.length)h+=sec("OTHER RECENT FILINGS · "+a.symbol,a.related.map(x=>`<div class="ann" onclick="go('a/${x.id}')"><div class="ah"><span class="dot p${x.prio}"></span><span class="tag">${esc(x.label)}</span><span class="mut r">${rel(x.ts)}</span></div><p>${esc(x.line)}</p></div>`).join(""));
+ if(a.text&&a.is_results)h+=`<details><summary>Original filing text</summary><p class="s mut">${esc(a.text)}</p></details>`;
+ $("#dbody").innerHTML=h;$("#det").scrollTop=0;openS("det");
+}
+
+/* ---------- routing: #all = window, #a/<id> = detail page (browser back works) ---------- */
+function route(){
+ const h=location.hash.slice(1);
+ if(h.startsWith("a/")){openDet(h.slice(2));return}
+ closeS("det");
+ if(h==="all"){if(!$("#list").classList.contains("open")){openS("list");loadMore(true)}}
+ else closeS("list");
+}
+addEventListener("hashchange",route);
+loadSummary();loadHome().then(route);
+</script></body></html>
